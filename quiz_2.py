@@ -1,7 +1,3 @@
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -9,30 +5,20 @@ from sklearn.neighbors import KNeighborsClassifier
 gr = pd.read_csv("gameratings.csv")
 tn = pd.read_csv("target_names.csv")
 te = pd.read_csv("test_esrb.csv")
-'''
-#print(gr.title.values)
-#print(gr.title.values.reshape(-1, 1))
 
-#X_train, X_test, y_train, y_test = gr.title.values.reshape(-1, 1), te.Target.values, random_state=11
-'''
-X_train = gr.title.values.reshape(-1, 1)
-y_train = gr.Target.values
-X_test = te.title.values.reshape(-1, 1)
-y_test = te.Target.values
-'''
-lr = LinearRegression()
+grp = pd.DataFrame(gr)
+tep = pd.DataFrame(te)
 
-lr.fit(X=X_train, y=y_train)
+print(grp)
+print(tep)
 
-coef = lr.coef_
-intercept = lr.intercept_
+X_train = grp.iloc[:1894,1:33]
+y_train = grp.iloc[:1894,33]
+X_test = tep.iloc[:502,1:33]
+y_test = tep.iloc[:502,33]
 
-predicted = lr.predict(X_test)
-expected = y_test
-
-print(predicted[:20])
-print(expected[:20])
-'''
+print(X_train.shape)
+print(y_train.shape)
 
 knn = KNeighborsClassifier()
 
@@ -41,6 +27,32 @@ knn.fit(X=X_train, y=y_train)
 predicted = knn.predict(X=X_test)
 expected = y_test
 
-print(predicted[:20])
-print(expected[:20])
+print(predicted)
+print(expected)
 
+wrong = [(p, e) for (p, e) in zip(predicted, expected) if p != e]
+print(wrong)
+
+
+p_dict = dict(zip(tep.iloc[: ,0], predicted))
+print(p_dict)
+#df = pd.DataFrame.from_dict(p_dict, columns = ['title', 'prediction'])
+df = pd.DataFrame(p_dict.items(), columns=['Title', 'Prediction'])
+df_reset = df.set_index('title')
+print(df_reset)
+
+
+df_reset.to_csv('MyPredictions.csv')
+
+
+text = open('MyPredictions.csv',"r")
+
+text = ''.join([i for i in text])
+text = text.replace("1", "Everyone")
+text = text.replace("2", "Everyone 10+")
+text = text.replace("3", "Mature")
+text = text.replace("4", "Teen")
+
+x = open('MyPredictions.csv',"w")
+x.writelines(text)
+x.close()
